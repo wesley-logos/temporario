@@ -214,3 +214,47 @@ Responda sempre em português brasileiro. Ao concluir uma tarefa, informe:
 - Funcionalidades confirmadas como implementadas, parciais ou pendentes.
 
 Não exponha credenciais, tokens, dados pessoais ou informações sensíveis. Não invente comandos de execução, caminhos, tabelas, serviços, endpoints ou resultados de teste.
+
+## 14. Constatações da auditoria integral do repositório
+
+A árvore Git consultada contém 243 arquivos em `central-compras/`. Os fatos abaixo foram verificados na árvore e nos arquivos versionados; não equivalem a validação de um ambiente de produção.
+
+### Arquivos e dependências
+
+- `composer.json` e `composer.lock` estão versionados. As dependências diretas são `vlucas/phpdotenv ^5.7` e `phpmailer/phpmailer ^6.9`; o lock consultado fixa PHPMailer 6.12.0 e PHPdotenv 5.7.0, além das dependências transitivas.
+- A pasta `vendor/` também está versionada. Não edite arquivos de dependências manualmente. Alterações de dependência devem ser feitas por Composer e refletidas coerentemente em `composer.json` e `composer.lock`.
+- Não foi encontrada suíte ou configuração de testes automatizados no diretório versionado `central-compras/`. Antes de afirmar cobertura existente, procure novamente na árvore atual. Não diga que testes passaram sem executá-los.
+- O `.gitignore` ignora `.env`, `storage/private/`, `docker-compose.*` e o nome minúsculo `dockerfile`. A árvore consultada não contém Dockerfile nem Compose versionados. Arquivos ignorados podem existir apenas em ambientes locais; solicite ou examine a configuração efetiva antes de orientar Docker.
+
+### Versão PHP
+
+Há referências divergentes: `README.md` define PHP 7.3 na stack, mas sugere PHP 8.4 no servidor local; `app/database.php` documenta PHP 7.3. O lock das dependências não declara uma plataforma PHP raiz (`platform` vazio), e as dependências consultadas aceitam faixas que incluem PHP 7.2.5 ou superior. Isso não prova compatibilidade integral da aplicação com todas essas versões. Não altere a versão de runtime sem verificar sintaxe, extensões, configuração do servidor e ambiente real.
+
+### Administração e cadastros mestres
+
+- `admin.php` concentra grande parte das operações administrativas e é um arquivo extenso. Leia os blocos de ação e seus helpers antes de alterar; evite duplicar ou refatorar amplamente o módulo.
+- Há operações administrativas para criar/editar/ativar/inativar/remover usuários e importar usuários por CSV/XLSX, com pré-validação e confirmação. A importação inclui CPF, normaliza o documento, valida dígitos verificadores e verifica duplicidades de matrícula, e-mail e CPF.
+- O formulário de criação de usuário e o fluxo de importação não devem ser tratados como equivalentes; confira os campos e regras de cada caminho.
+- Há operações administrativas locais para criar/editar/ativar/inativar/remover categorias e produtos usando identificadores OMIE. Isso não constitui integração ou sincronização automática com o ERP. Requisitos que definem OMIE como origem dos cadastros mestres devem ser considerados antes de ampliar esses cadastros locais.
+- Também existem operações para grupos/membros e ordem de aprovadores, calendários e feriados, Centros de Custo e publicação de fluxos. Ações disponíveis devem ser verificadas no código antes de declarar limites administrativos.
+
+### Histórico de migrações
+
+- A árvore consultada contém arquivos numerados de `002` a `019`; não foi encontrado `001`.
+- O schema inicial atual contém 33 tabelas e já incorpora estruturas que também aparecem em migrações posteriores. Ele não deve ser aplicado sobre um banco legado como se fosse uma migração incremental.
+- Para instalação nova, use o schema inicial conforme o procedimento documentado. Para banco existente, inventarie as tabelas, colunas, índices, constraints e alterações já aplicadas antes de selecionar migrações pendentes.
+- A migração `017_perfil_unico_por_usuario.sql` pode falhar se houver mais de um vínculo por usuário; execute a consulta de diagnóstico e resolva as duplicidades antes.
+- A migração `019_cpf_usuarios.sql` adiciona coluna e índice que já existem no schema inicial consultado. Só a execute em banco legado no qual ambos estejam ausentes.
+- A migração `018_centros_custo_omie_id_opcional.sql` altera a nulabilidade de `centros_custo.omie_id`; verifique o estado real antes de aplicá-la.
+- A migração `011_fuso_brasilia.sql` altera dados existentes em `log_sistema`, `usuarios.ultimo_acesso_em` e `sso_tokens_utilizados`. Não reaplique nem execute sem confirmar o fuso em que os valores antigos foram gravados e sem backup/validação.
+- Não foi localizada tabela de controle de migrações no schema consultado. Não presuma que o sistema registra automaticamente quais scripts já foram executados.
+
+### Divergências adicionais confirmadas
+
+- O modelo documental cita tabelas como `etapas_workflow`, `diligencias`, `pedidos`, `historico_precos`, `projetos`, `sincronizacoes_erp` e `notificacoes`; elas não estão entre as 33 tabelas do schema inicial consultado. Não escreva consultas contra essas tabelas sem verificar migrações posteriores ou o banco de destino.
+- A documentação de modelagem cita nomes de campos que diferem do DDL, por exemplo `dados_fiscais_json` versus `fornecedores.dados_fiscais`, e `politica_snapshot_json` versus o campo efetivo de `execucoes_sla`. Use o nome do schema real.
+- `docs/fluxos-do-sistema.md` lista gestão de usuários como pendência em uma seção, mas `admin.php` implementa cadastro, edição, ativação/inativação, remoção e importação. Ao encontrar contradições, confira a rota e o bloco de ação e atualize a documentação correta.
+- `docs/ajuda` (conteúdo servido por `ajuda.php`) menciona devolução para ajuste e pedido de informação como se fossem ações disponíveis; o workflow implementado em `aprovar_etapa.php` aceita `aprovado` e `reprovado`. Não documente devolução/diligência como funcionalidade operacional até existir endpoint e persistência completos.
+- `app/system_log.php` contém comentário histórico que descreve o horário como UTC, mas usa `NOW(6)` em uma conexão cujo fuso é configurado como `-03:00`. Considere o comportamento efetivo do MySQL e a migração `011`; não altere a semântica de timestamps sem mapear dados e ambientes.
+- `app/sso_config.php` contém valores genéricos de fallback. Valores de audiência, domínio e formato de matrícula devem ser configurados e homologados por ambiente. Não confunda fallback de desenvolvimento com configuração de produção.
+
