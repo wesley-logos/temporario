@@ -1,0 +1,254 @@
+.top {
+    position: relative;
+    z-index: 20
+}
+
+.account-menu {
+    position: relative;
+    display: inline-block;
+    color: var(--blue, #315be8);
+    font-size: 12px;
+    font-weight: 600
+}
+
+.account-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px
+}
+
+.account-menu summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border: 1px solid var(--line, #e9ebef);
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    list-style: none
+}
+
+.account-menu summary::-webkit-details-marker {
+    display: none
+}
+
+.account-menu summary::after {
+    width: 0;
+    height: 0;
+    border-top: 5px solid currentColor;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
+    content: ""
+}
+
+.account-menu[open] summary {
+    border-color: var(--blue, #315be8)
+}
+
+.account-menu-options {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 30;
+    display: grid;
+    min-width: 170px;
+    padding: 5px;
+    border: 1px solid var(--line, #e9ebef);
+    border-radius: 9px;
+    background: #fff;
+    box-shadow: 0 12px 28px rgba(20, 27, 38, .16)
+}
+
+.top .account-menu-options a {
+    padding: 9px 10px;
+    border-radius: 6px;
+    color: var(--ink, #20252d);
+    font-size: 13px;
+    font-weight: 500
+}
+
+.top .account-menu-options a:hover,
+.top .account-menu-options a:focus {
+    outline: none;
+    background: var(--canvas, #f5f6f8);
+    color: var(--blue, #315be8)
+}
+
+.account-page {
+    width: min(900px, calc(100% - 40px));
+    margin: 34px auto 60px
+}
+
+.account-page h1 {
+    margin: 0 0 8px;
+    font-size: clamp(25px, 4vw, 34px)
+}
+
+.account-page .intro {
+    margin: 0 0 24px;
+    color: var(--muted, #727b88)
+}
+
+.account-panel {
+    margin: 18px 0;
+    padding: 24px;
+    border: 1px solid var(--line, #e9ebef);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 5px 18px rgba(20, 27, 38, .04)
+}
+
+.account-panel h2 {
+    margin: 0 0 16px;
+    font-size: 18px
+}
+
+.account-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px
+}
+
+.account-field {
+    display: grid;
+    gap: 6px
+}
+
+.account-field label {
+    font-size: 13px;
+    font-weight: 650
+}
+
+.account-field input {
+    width: 100%;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid #d9dde4;
+    border-radius: 7px;
+    background: #fff;
+    color: var(--ink, #20252d);
+    font: inherit
+}
+
+.account-field #nome {
+    bottom: 11px;
+    position: relative;
+    height: max-content;
+}
+
+.account-field input[readonly] {
+    background: #f5f6f8;
+    color: #626b78
+}
+
+.account-field small {
+    color: var(--muted, #727b88)
+}
+
+.account-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px
+}
+
+.account-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 9px 14px;
+    border: 1px solid var(--blue, #315be8);
+    border-radius: 7px;
+    background: var(--blue, #315be8);
+    color: #fff;
+    font: inherit;
+    font-weight: 650;
+    text-decoration: none;
+    cursor: pointer
+}
+
+.account-button.secondary {
+    background: #fff;
+    color: var(--blue, #315be8)
+}
+
+.account-message {
+    margin: 16px 0;
+    padding: 12px 14px;
+    border: 1px solid #b8dfca;
+    border-radius: 8px;
+    background: #eef8f1;
+    color: #176747
+}
+
+.account-message.error {
+    border-color: #edc1bd;
+    background: #fff1f0;
+    color: #a03933
+}
+
+.account-profiles {
+    margin: 0;
+    padding-left: 20px
+}
+
+.password-dialog {
+    width: min(520px, calc(100% - 32px));
+    max-height: calc(100vh - 32px);
+    overflow: auto;
+    padding: 24px;
+    border: 0;
+    border-radius: 12px;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, .24)
+}
+
+.password-dialog::backdrop {
+    background: rgba(20, 27, 38, .58)
+}
+
+.password-dialog .account-field + .account-field {
+    margin-top: 15px
+}
+
+.help-section + .help-section {
+    margin-top: 26px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line, #e9ebef)
+}
+
+.help-section h2 {
+    margin-bottom: 8px
+}
+
+.help-section ol,
+.help-section ul {
+    padding-left: 22px
+}
+
+.help-section li + li {
+    margin-top: 7px
+}
+
+@media (max-width: 600px) {
+    .account-page {
+        width: min(100% - 24px, 900px);
+        margin-top: 22px
+    }
+
+    .account-panel {
+        padding: 18px
+    }
+
+    .account-form-grid {
+        grid-template-columns: 1fr
+    }
+
+    .account-menu summary {
+        max-width: 48vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap
+    }
+}

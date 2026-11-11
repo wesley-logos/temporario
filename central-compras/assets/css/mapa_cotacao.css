@@ -1,0 +1,391 @@
+:root {
+    --ink: #20252d;
+    --muted: #727b88;
+    --line: #e5e8ed;
+    --blue: #315be8;
+    --paper: #fff;
+    --canvas: #f5f6f8;
+    --green: #176747;
+    --red: #9a3832
+}
+
+* {
+    box-sizing: border-box
+}
+
+body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--ink);
+    font: 14px/1.5 Inter, system-ui, sans-serif
+}
+
+.top {
+    height: 62px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 max(20px, calc((100vw - 1180px)/2));
+    background: #fff;
+    border-bottom: 1px solid var(--line)
+}
+
+.top a {
+    color: var(--blue);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 650
+}
+
+.wrap {
+    max-width: 1180px;
+    margin: 30px auto;
+    padding: 0 20px
+}
+
+.page-head,
+.section-heading,
+.quote-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px
+}
+
+.page-head {
+    margin-bottom: 18px
+}
+
+.page-head h1 {
+    margin: 4px 0;
+    font-size: 28px;
+    letter-spacing: -.6px
+}
+
+.page-head p,
+.hint {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px
+}
+
+.eyebrow {
+    color: #71809d;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase
+}
+
+.panel {
+    margin: 14px 0;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--paper);
+    box-shadow: 0 8px 24px #26334d08
+}
+
+.panel h2 {
+    margin: 0 0 5px;
+    font-size: 16px
+}
+
+.section-heading {
+    margin-bottom: 14px
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 8px 13px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: #394351;
+    background: #fff;
+    text-decoration: none;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 650;
+    cursor: pointer
+}
+
+.button.primary {
+    color: #fff;
+    background: var(--blue);
+    border-color: var(--blue)
+}
+
+.button:disabled {
+    opacity: .55;
+    cursor: not-allowed
+}
+
+.notice {
+    margin: 14px 0;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background: #eaf6f0;
+    color: var(--green);
+    font-size: 12px
+}
+
+.notice.error {
+    color: var(--red);
+    background: #fff0ef
+}
+
+.table-wrap {
+    overflow-x: auto
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px
+}
+
+th,
+td {
+    padding: 10px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: middle
+}
+
+th {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px
+}
+
+.field {
+    display: grid;
+    gap: 6px;
+    min-width: 0
+}
+
+.field label {
+    color: #515a67;
+    font-size: 11px;
+    font-weight: 650
+}
+
+.field input,
+.field select,
+.field textarea {
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 10px;
+    border: 1px solid #dfe3e9;
+    border-radius: 7px;
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+    font-size: 12px
+}
+
+.field textarea {
+    min-height: 76px;
+    resize: vertical
+}
+
+.field small {
+    color: var(--muted);
+    font-size: 10px
+}
+
+.quote-card {
+    margin: 13px 0;
+    padding: 15px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fcfcfd
+}
+
+.quote-card.lowest-price {
+    border-color: #72b697;
+    background: #f1faf5;
+    box-shadow: 0 0 0 2px #17674712
+}
+
+.quote-head {
+    margin-bottom: 12px
+}
+
+.quote-head h3 {
+    margin: 0;
+    font-size: 14px
+}
+
+.price-badge {
+    padding: 3px 8px;
+    border-radius: 20px;
+    color: #176747;
+    background: #dff2e8;
+    font-size: 10px;
+    font-weight: 750;
+    white-space: nowrap
+}
+
+.quote-total {
+    margin-left: auto;
+    color: #394351;
+    font-size: 12px;
+    white-space: nowrap
+}
+
+.winner-reason {
+    display: grid;
+    gap: 6px
+}
+
+.winner-reason[hidden],
+[data-lowest-badge][hidden],
+#exceptionJustificationField[hidden] {
+    display: none
+}
+
+.winner-reason label,
+#exceptionJustificationField label {
+    color: #515a67;
+    font-size: 11px;
+    font-weight: 650
+}
+
+#exceptionJustificationField {
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid #e8c97b;
+    border-radius: 8px;
+    background: #fff9e9
+}
+
+.remove-quote {
+    border: 0;
+    color: var(--red);
+    background: transparent;
+    font: inherit;
+    font-size: 11px;
+    cursor: pointer
+}
+
+.quote-fields {
+    display: grid;
+    grid-template-columns: 1.4fr .8fr 1fr .65fr;
+    align-items: end;
+    gap: 10px;
+    margin: 10px 0 13px
+}
+
+.quote-fields.quote-bottom {
+    grid-template-columns: 1fr 1fr;
+    align-items: start
+}
+
+.winner-choice>label:first-child {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 8px
+}
+
+.winner-choice input[type=radio] {
+    width: 16px;
+    min-height: 16px;
+    accent-color: var(--blue)
+}
+
+.file-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px
+}
+
+.file-list a {
+    color: var(--blue);
+    font-size: 11px
+}
+
+.round-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px
+}
+
+.round-chip {
+    display: flex;
+    gap: 9px;
+    align-items: center;
+    padding: 7px 10px;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    font-size: 11px
+}
+
+.round-chip span {
+    color: var(--muted)
+}
+
+.empty {
+    color: var(--muted);
+    font-size: 12px
+}
+
+.finalize-panel {
+    border-top: 3px solid var(--blue)
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+    margin-top: 12px
+}
+
+@media(max-width:850px) {
+    .quote-fields {
+        grid-template-columns: 1fr 1fr
+    }
+}
+
+@media(max-width:560px) {
+    .wrap {
+        margin: 20px auto;
+        padding: 0 12px
+    }
+
+    .page-head,
+    .section-heading {
+        align-items: flex-start;
+        flex-direction: column
+    }
+
+    .quote-fields,
+    .quote-fields.quote-bottom {
+        grid-template-columns: 1fr
+    }
+
+    .quote-head {
+        flex-wrap: wrap;
+        justify-content: flex-start
+    }
+
+    .quote-total {
+        margin-left: 0;
+        width: 100%
+    }
+
+    .actions {
+        flex-direction: column-reverse
+    }
+
+    .actions .button {
+        width: 100%
+    }
+}

@@ -1,0 +1,234 @@
+Contexto e Stakeholders
+Problema de Negócio: Processo de compras fragmentado entre Central de Serviços e OMIE. Falha na centralização via OMIE por limitações de permissão e fluxos de aprovação inflexível. Resultado: retrabalho manual e perda de rastreabilidade.
+Stakeholders: CSC (Centro de Serviço Compartilhado) – Maria da Conceição e Maycon.
+
+Frente de Ação
+2.1: Integração Central + OMIE (Curto Prazo)
+ 2.1.1 Objetivo
+Automatizar o fluxo de compras integrando a Central de Serviços ao OMIE via API, garantindo rastreabilidade e feedback em tempo real para o solicitante.
+ 2.1.2 Escopo
+Dentro: Desenvolvimento de API/Automação de ponte; novo formulário estruturado; sincronização de aprovadores; feedback loop de status.
+Fora: Customização interna do OMIE; reestruturação de módulos não relacionados a compras na Central.
+ 2.1.3 Regras de Negócio (RN)
+RN01 – Gatilho de Integração: O envio para o OMIE ocorre apenas após todas as aprovações na Central e anexação do mapa de cotação com o vencedor.
+RN02 – Registro de Auditoria: O campo "Observações" no OMIE deve conter: ID do Chamado, Nomes dos Aprovadores, datas e motivos.
+RN03 – Tratamento de Recusa: Recusas no OMIE devolvem o chamado ao solicitante na Central com o motivo e encerram como "Recusado".
+RN04 – Encerramento por Entrega: Chamado finalizado na Central apenas quando o status no OMIE for "Conferido".
+RN05 – Reprovação Direta: Se um aprovador reprovar na Central, o chamado é encerrado automaticamente.
+ 2.1.4 Requisitos Funcionais (RF) e Não Funcionais (RNF)
+RF01: Mapeamento e conversão de campos entre Central e API OMIE.
+RF02: Sincronização de status (Webhooks) para comentários automáticos na Central.
+RF03: Log técnico de integração para monitoramento da TI.
+RNF01: Idempotência (impedir duplicidade de requisições).
+RNF02: Segregação de dados por ID de chamado.
+RNF03: Sync assíncrono com intervalo máximo de 15 minutos.
+ 2.1.5 Riscos (Frente 1)
+Ausência de SLA de aprovação na Central.
+Impacto nos indicadores do CSC (chamado fica aberto até o financeiro/entrega).
+Bug de Lógica: No GLPI, a última ação de aprovação/reprovação pode sobrescrever a anterior.
+Inexistência de campo de cotação nativo (aprovadores leem texto livre).
+2.1.5 Critérios de aceita (Frente 1)
+Validação de Dados: Garantir que todos os campos obrigatórios do formulário da Central (Produto, CC, Quantidade) cheguem ao OMIE sem truncamento ou erro de tipo.
+Sincronização de Status: Confirmar que, ao mudar o status no OMIE (ex: de "Requisição" para "Pedido"), um comentário automático apareça no chamado da Central em até 15 minutos.
+Auditoria: Verificar se o campo "Observações" no OMIE contém o log completo (quem aprovou e quando) conforme a RN02.
+Fluxo de Recusa: Testar se uma recusa feita pelo comprador no OMIE devolve o chamado para o solicitante na Central e altera o status para "Recusado".
+Prova de Integridade: Tentar forçar o envio de um chamado reprovado para o OMIE e garantir que o sistema bloqueie a transação.
+
+Frente de Ação
+3.1: Novo Sistema de Compras (Solução Definitiva)
+3.1.1 Objetivo
+Desenvolvimento de sistema dedicado para suprimentos, focado em UX minimalista, fluxos de aprovação complexos e integração nativa.
+3.1.2 Escopo
+Dentro:
+Fluxo de compras completo;
+integração via API;
+gestão de SLA;
+relatórios de performance;
+SSO com a Central de Serviços.
+Fora:
+Execução financeira (pagamentos/notas);
+gestão de estoque físico;
+mensageria externa com fornecedores.
+3.1.3 Regras de Negócio (RN)
+RN01 – Lógica de Aprovação (E/OU):
+Condição "E": Aprovação hierárquica sequencial obrigatória.
+Condição "OU": Aprovação por pares (colegiado). O primeiro que interagir encerra a pendência para os demais (com feedback visual de "Aprovado por X").
+RN02 – Atribuição de Alçadas e Fluxo de Aprovação
+O sistema deve gerenciar os aprovadores através de grupos configuráveis, seguindo a lógica de hierarquia e responsabilidade financeira:
+Vínculo Mandatório por Centro de Custo: Toda Solicitação de Compra (SC) será vinculada automaticamente ao fluxo de aprovação pré-estabelecido para o Centro de Custo selecionado.
+Flexibilidade do Comprador: O sistema deve permitir que o comprador inclua manualmente novos grupos ou aprovadores específicos durante a criação ou revisão da requisição, caso a especificidade da compra exija alçadas extras.
+Gestão de Grupos: Os grupos de aprovação devem ser facilmente editáveis para permitir mudanças rápidas em casos de reestruturação de centros de custo.
+RN04 – Mapa de Cotação (Mínimo de 3 Fornecedores) - mais de um rodada de cotação (saving) - do mesmo fornecedor
+O sistema deve garantir a competitividade de preços e a transparência na escolha do fornecedor através de um comparativo estruturado:
+Regra de Piso: O sistema exigirá, por padrão, o cadastro de no mínimo 3 orçamentos de fornecedores distintos para que o Mapa de Cotação possa ser enviado para aprovação de valor (Aprovação 2).
+Flexibilidade de Expansão: Não haverá limite máximo. O comprador poderá incluir quantos fornecedores julgar necessário para compor a melhor oferta.
+Tratamento de Exceções (Justificativa): Caso o comprador não consiga atingir o mínimo de 3 cotações (ex: fornecedor exclusivo, tabelado ou urgência comprovada), o sistema deve permitir o prosseguimento apenas mediante o preenchimento de um campo obrigatório de "Justificativa de Fornecedor Único/Insuficiente".
+Evidência Obrigatória: Para cada fornecedor listado no mapa, o sistema deve exigir o upload do respectivo comprovante (PDF/Imagem/E-mail) antes da finalização da etapa.
+RN05 – Integração de Acesso: Link de redirecionamento/acesso via Central de Serviço.
+RN06 – Gestão de Perfis: Controle de quem pode solicitar/comprar/aprovar.
+RN07 – Visibilidade de Dados: Nível Operacional (vê o seu); Gestor (vê o contrato); Diretor (vê tudo).
+RN08 – Trava de Edição (SC): Bloqueio de campos da Solicitação de Compra após o envio (evita alteração de itens durante a cotação).
+RN09 – Visualização do Fluxo (Indicador de Etapas)
+Para garantir transparência e reduzir a ansiedade do solicitante, o sistema deve exibir visualmente o progresso da requisição:
+Trilha Visual: Uma barra de progresso no topo da tela deve indicar em qual estágio o processo se encontra (ex: Solicitação, Cotação, Aprovção de Valor, Integração OMIE).
+Status Quantitativo: O sistema deve informar textualmente o estágio atual em relação ao total (ex: "Etapa 2 de 4 – Aguardando Cotação").
+Dinamismo (Conforme RN12): O indicador deve ser inteligente. Se o Centro de Custo da Matriz não exigir a etapa de "Aprovação de Solicitação", essa etapa não deve nem aparecer na trilha, mostrando um caminho mais curto e direto.
+Detalhamento de Pendência: Ao clicar ou passar o mouse sobre a etapa atual, o sistema deve exibir quem é o responsável (ou grupo) que detém a pendência naquele momento.
+RN10 – Vínculo de Fluxo: Comprador só abre mapa de cotação para solicitações já aprovadas na fase 1.
+RN11 – Congelamento de Valores: Após aprovação do Mapa (Fase 2), valores e fornecedores são bloqueados para envio ao OMIE.
+RN12 – Configurabilidade Modular de Fluxos (Matriz vs. Filiais)
+O sistema deve permitir a personalização total do workflow de aprovação, adaptando-se às políticas de governança específicas de cada Centro de Custo:
+Ativação de Etapas por Centro de Custo: Cada estágio do processo (Solicitação, Mapa de Cotação, Pedido de Compra) pode ter sua etapa de aprovação habilitada ou desabilitada de forma independente nas configurações do sistema.
+Hierarquias Diferenciadas:
+Exemplo Matriz: Pode ser configurada para ter um fluxo simplificado, exigindo aprovação apenas na etapa de Mapa de Cotação.
+Exemplo Filiais: Pode ser configurada para um fluxo rigoroso, exigindo aprovações sucessivas na Solicitação, no Mapa de Cotação e na Finalização do Pedido.
+Impacto no indicador de etapas (RN09): O indicador de progresso (indicador de etapas) deve se ajustar dinamicamente. Se um Centro de Custo não exige aprovação na Solicitação, o sistema deve saltar visualmente e logicamente para a próxima etapa ativa.
+Gestão de Exceções: O Setor de Compras (Administrador) é o único perfil com permissão para definir qual Centro de Custo segue qual "trilha" de aprovação.
+RN13 – Soberania do ERP (OMIE): O novo sistema não permitirá a criação manual de novos Produtos, Categorias ou Centros de Custo. Toda e qualquer nova entidade deve ser cadastrada primeiramente no OMIE e refletida no sistema via integração.
+RN14 – Validação de Ativação: Somente registros (Produtos/Centros de Custo) marcados como "Ativos" no OMIE poderão ser selecionados em novas solicitações de compra.
+RN15 – Cadastro de Fornecedor Candidato: O sistema deve permitir que o Comprador realize um cadastro simplificado de novos fornecedores (Nome/Razão Social e CNPJ/CPF) diretamente no novo sistema para fins de composição do Mapa de Cotação.
+RN16 – Unicidade por Documento (CNPJ/CPF): Para evitar duplicidade na "mão dupla", o sistema deve obrigatoriamente validar se o CNPJ/CPF já existe na base sincronizada do OMIE antes de permitir um novo cadastro manual.
+RN17 – Gatilho de Homologação: Um "Fornecedor Candidato" só poderá ser enviado para o OMIE como um cadastro definitivo após vencer uma cotação e receber a Aprovação de Valor (Fase 2). Isso evita "sujar" o ERP com fornecedores que nunca chegaram a vender para a empresa.
+RN18 – Rejeição Definitiva (Total):
+Definição: Quando o aprovador entende que a compra é indevida ou desnecessária.
+Ação: O fluxo é interrompido imediatamente.
+Status: A solicitação assume o status "Encerrado - Reprovado".
+Obrigatoriedade: É obrigatório o preenchimento da justificativa de reprovação.
+RN19 – Devolução para Ajuste (Rejeição Parcial)
+Diferente da reprovação total, a devolução permite a correção de dados específicos. O destino da devolução é determinado pela etapa em que a rejeição ocorreu:
+Rejeição na Etapa de Solicitação: A pendência retorna para o Solicitante. (Ex: Ajuste de quantidade ou especificação do produto).
+Rejeição na Etapa de Mapa de Cotação: A pendência retorna para o Comprador. (Ex: Ajuste de valores, troca de fornecedor ou nova cotação necessária).
+Rejeição na Etapa de Pedido de Compra: A pendência retorna para o Comprador. (Ex: Ajuste de condições de pagamento ou prazos acordados que não foram aceitos).
+RN20 – Solicitação de Informação (Diligência):
+Definição: Quando o aprovador tem uma dúvida técnica ou comercial antes de decidir.
+Ação: O fluxo é pausado. A solicitação entra no status "Aguardando Informação".
+Diferencial: Não é uma rejeição. Após o responsável (solicitante ou comprador) responder à dúvida, a solicitação retorna exatamente para o ponto onde parou, sem necessidade de reiniciar as aprovações anteriores.
+Visibilidade: O "Indicador de Etapas" deve sinalizar visualmente que aquela fase está em modo de "Dúvida/Esclarecimento".
+RN21 – Princípio do Feedback Educativo (Anti-Frustração):
+Todo impedimento de avanço de etapa deve ser acompanhado de uma mensagem clara.
+Exemplo: A solicitação não pode avançar para cotação porque o anexo técnico obrigatório para a categoria [Hardware] não foi enviado.
+RN22 – Trava de Integridade Pré-Integração: O sistema deve realizar um "check-up" completo dos dados antes de disparar para o OMIE. Se houver falha de comunicação ou dados inconsistentes (ex: Centro de Custo inativo no ERP), o sistema deve impedir o envio e gerar um alerta imediato para o Comprador/TI.
+RN23 – Bloqueio de Etapa por Inconsistência: Nenhuma solicitação pode mudar de status se houver campos obrigatórios vazios ou arquivos não anexados, garantindo que o fluxo seguinte receba a informação 100% limpa.
+RN24 – Matriz de SLA Dinâmica (Por Etapa e Centro de Custo):
+O sistema deve permitir que o administrador (Setor de Compras) configure o tempo de resposta (em horas ou dias úteis) para cada etapa ativa do fluxo.
+Flexibilidade: O Centro de Custo "Matriz" pode ter um SLA de 24h para cotação, enquanto o Centro de Custo "Filial Norte" pode ter 48h, devido à complexidade logística.
+RN25 – Regimes de Contagem (Corridos vs. Úteis): O administrador define se o prazo será contado em dias corridos ou úteis. Para Dias Úteis, o sistema deve obrigatoriamente descontar finais de semana e feriados cadastrados.
+RN26 – Janela de Trabalho: Para SLAs configurados em horas, o cronômetro só contabiliza o tempo dentro da janela operacional definida (Ex: 08:00 às 18:00). Solicitações que entram fora desse horário ou em finais de semana só iniciam a contagem no primeiro minuto do próximo período útil.
+RN27 – Pausa por Diligência (Solicitação de Informação): Sempre que um aprovador solicitar esclarecimentos, o SLA da etapa atual é pausado. Ele é retomado (de onde parou) assim que a resposta for enviada, garantindo que o tempo de dúvida do aprovador não seja "punido".
+RN28 – SLA de Devolução (Ação do Usuário): Quando uma solicitação volta para Ajuste, encerra-se o SLA da etapa anterior e inicia-se um cronômetro específico para o responsável pelo ajuste (Solicitante ou Comprador). Isso rastreia quanto tempo o processo fica parado aguardando correções do usuário.
+RN29 – Reinício vs. Retomada de Fluxo:
+Ajuste (Mudança de dado): O SLA da etapa que recebeu o ajuste é zerado/reiniciado, pois a análise deve ser feita sobre os novos dados.
+Informação (Diligência): O SLA da etapa é apenas retomado, preservando o tempo já gasto pelo aprovador antes da dúvida.
+RN30 – Diferenciação de Tempos (Lead Time vs. Processamento):
+Lead Time Total: Tempo bruto da abertura ao encerramento (métrica de satisfação do solicitante).
+Tempo de Processamento: Somatória apenas dos tempos em que a bola esteve com aprovadores ou compradores (métrica de eficiência da equipe).
+3.1.4 Requisitos Funcionais (RF)
+RF01 – Painel de Configuração de Workflow: O sistema deve oferecer uma tela exclusiva para o setor de compras configurar, por Centro de Custo, quais etapas de aprovação estarão ativas (Solicitação, Mapa ou Pedido) e quem são os respectivos aprovadores.
+RF02 – Motor de Fluxo Dinâmico: O sistema deve processar a RN12 e ocultar automaticamente as etapas não configuradas para aquele Centro de Custo, ajustando o Indicador de Etapas em tempo real.
+RF03 – Gestão de Alçadas por Valor: Funcionalidade para definir que, acima de determinado valor, o sistema inclua automaticamente um Diretor como aprovador final, independente do fluxo padrão do Centro de Custo.
+RF04 – Formulário de Entrada Estruturado: Campos obrigatórios para Centro de Custo, Categoria, Produto (vincular ao cadastro do OMIE), Quantidade e Prazo Estimado.
+RF05 – Trava de Categoria: O sistema deve impedir a inclusão de produtos de categorias diferentes na mesma solicitação (conforme RF02 anterior).
+RF06 – Painel do Comprador (Mapa de Cotação): Interface para inserção de no mínimo 3 orçamentos, com campos para: Fornecedor, Valor Unitário, Prazo de Entrega, Condição de Pagamento, frete (cif ou fob) e Anexo do Orçamento.
+RF07 – Campo de Justificativa Crítica: Caso o comprador insira menos de 3 cotações, o sistema deve habilitar um campo de texto obrigatório para justificativa (conforme RN04).
+RF08 – Destaque de Melhor Oferta: O sistema deve sinalizar visualmente a cotação de menor valor, mas permitir a seleção de outra opção caso o comprador justifique a escolha técnica.
+RF09 – Indicador de Etapas (Visual): Exibir no topo da solicitação o progresso atual, destacando as fases concluídas, a fase atual e as próximas (ajustado ao fluxo do CC).
+RF10 – Linha do Tempo de Comentários: Registro cronológico de todas as interações, aprovações e reprovações, permitindo anexar justificativas em texto.
+RF11 – Dashboard de Gargalos (KPIs): Visão gerencial para Maria e Maycon identificarem onde o processo está parado (ex: solicitações em "Aguardando Aprovação" há mais de 48h).
+RF12 – Consulta de Histórico de Preços: Função de busca rápida que mostra as últimas 3 compras do mesmo produto para balizar a aprovação atual.
+RF13 – Pré-validação OMIE: Antes de gerar o pedido final, o sistema deve realizar um "ping" na API do OMIE para validar se o Centro de Custo e o Produto continuam ativos.
+RF14 – Disparador de Pedido: Após a última aprovação do fluxo configurado, o sistema deve consolidar os dados e enviar a Requisição/Pedido para o OMIE via API automaticamente.
+RF15 – Sincronização de Dados Mestres: O sistema deve possuir uma rotina para buscar e atualizar periodicamente (ex: 1x ao dia ou via gatilho) a lista de:
+Produtos e suas respectivas categorias;
+Centros de Custo e Projetos;
+Lista de Fornecedores já homologados.
+RF16 – Busca Dinâmica via API: No formulário de solicitação, ao digitar o nome de um produto, o sistema deve consultar a base sincronizada para garantir que o usuário selecione um item válido e existente no OMIE.
+RF17 – Cache Local de Performance: Para não sobrecarregar a API do OMIE a cada clique, o sistema deve manter uma cópia local desses dados (cache), atualizando-a automaticamente.
+RF18 – Formulário Simplificado de Fornecedor: Interface rápida para o comprador inserir dados básicos de um novo fornecedor durante o Mapa de Cotação.
+RF19 – Sincronização Reversa: Caso um "Fornecedor Candidato" vença a cotação, o sistema deve disparar os dados para a API do OMIE para criar o cadastro financeiro automaticamente, retornando o ID do OMIE para o novo sistema.
+RF20 – Alerta de Cadastro Incompleto: O sistema deve sinalizar ao comprador se o fornecedor vencedor ainda carece de dados obrigatórios exigidos pelo OMIE (como Inscrição Estadual ou Endereço completo) antes de finalizar o pedido.
+RF16 – Caixa de Decisão do Aprovador: A interface de aprovação deve apresentar três botões claros para o gestor:
+Aprovar: Segue para o próximo nível.
+Reprovar/Devolver: Abre sub-opções para "Encerrar Definitivamente" ou "Devolver para Ajuste", com campo de texto obrigatório.
+Solicitar Informação: Abre campo para pergunta direta ao solicitante/comprador.
+RF17 – Timeline com "Thread" de Conversa: O Histórico de Comentários deve permitir que a resposta a uma solicitação de informação fique vinculada à pergunta original, criando um fio de conversa que facilite a leitura futura em auditorias.
+RF18 – Alertas de Retorno:
+Se a solicitação for Devolvida para Ajuste, o solicitante recebe um e-mail de "Ação Necessária".
+Se for Solicitada Informação, o responsável recebe um alerta de "Dúvida Pendente".
+RF19 – Inteligência de Roteamento de Retorno: O sistema deve identificar automaticamente o "Dono da Etapa" anterior para direcionar a notificação de ajuste.
+Se o status for "Em Aprovação de Solicitação" -> Destino: Solicitante.
+Se o status for "Em Aprovação de Mapa/Pedido" -> Destino: Comprador.
+RF20 – Preservação de Dados no Retorno: Ao retornar para ajuste, o sistema não apaga o que já foi preenchido. Ele libera os campos para edição para que o responsável apenas corrija o ponto apontado pelo aprovador, mantendo o restante da estrutura intacta para ganhar agilidade.
+RF21 – Validação de Formulário Tempo Real: O sistema deve validar os dados enquanto o usuário preenche. Se o formato do CNPJ estiver errado ou um campo de texto exceder o limite, o campo deve ficar vermelho e mostrar a instrução de correção antes mesmo do usuário tentar salvar.
+RF22 – Painel de Erros de Integração (Log Humanizado):
+Para falhas técnicas (API fora, Time-out), o sistema deve exibir para o Comprador um status de "Erro de Sincronização" com um botão de "Ver Detalhes".
+O Detalhe deve conter: O erro técnico (para você consultar o banco) e uma mensagem amigável (ex: "O OMIE está temporariamente fora do ar. Tentaremos novamente em 5 minutos").
+RF23 – Notificação de Falha de Fluxo: Caso uma regra de "E" ou "OU" falhe por falta de cadastro de um aprovador no grupo, o sistema deve enviar uma notificação para o Administrador (TI/Compras) para que o ajuste seja feito sem que o solicitante fique "no escuro".
+RF24 – Confirmação de Recebimento do ERP: O sistema só deve considerar a etapa finalizada quando receber o código 201 Created ou similar da API do OMIE. Caso receba um erro (ex: 400 Bad Request), o sistema deve exibir o motivo exato retornado pelo ERP (ex: "ID de Produto inválido no OMIE").
+RF25 – Configurador de Prazos e Calendário: Interface para cadastro de feriados, definição de jornada semanal (sábados úteis ou não) e atribuição de tempos (dias/horas) por centro de custo.
+RF26 – Sinalização Visual (Semáforo): O Indicador de Etapas deve mudar de cor conforme o status do SLA: Verde (em dia), Amarelo (80% do tempo gasto) e Vermelho (atrasado).
+RF27 – Alertas de Escalonamento: Envio automático de e-mail/notificação para o responsável e seu gestor imediato quando um SLA atinge 100% de ocupação sem conclusão.
+RF28 – Dashboard de Gargalos (Heatmap): Painel gerencial que mostra o tempo médio gasto em cada etapa. Deve permitir filtrar por "Tempo com o Usuário (Ajustes)" para provar onde o processo realmente trava.
+RF29 – Relatório de "Idas e Vindas": Contador de quantas vezes uma solicitação retornou para ajuste, servindo como KPI de qualidade da abertura de chamados.
+3.1.5 Requisitos Não Funcionais (RNF)
+RNF01 – Controle de Acesso Baseado em Perfis: O sistema deve restringir o acesso a dados e funcionalidades de acordo com o perfil (Solicitante, Comprador, Gestor, Diretor), garantindo que um usuário da "Filial A" não visualize solicitações da "Filial B", a menos que tenha permissão de nível "Diretor".
+RNF02 – Log de Auditoria Imutável: Toda e qualquer alteração de status, aprovação ou modificação em cotações deve gerar um registro de log contendo: ID do Usuário, Ação Realizada, Valor Anterior, Novo Valor, Data/Hora e IP de Origem. Esses registros não podem ser editados ou excluídos.
+RNF03 – Tolerância a Falhas de API: Em caso de indisponibilidade da API do OMIE, o sistema deve reter os pedidos aprovados em uma fila de espera e tentar o reenvio automático assim que a conexão for restabelecida, notificando a TI sobre o atraso.
+RNF05 – Idempotência de Transações: O sistema deve garantir que, mesmo em caso de falha de rede durante o envio, um mesmo pedido nunca seja gerado em duplicidade no OMIE.
+RNF06 – Sincronização de Dados Mestres: O cache local de produtos e centros de custo deve ser atualizado automaticamente em intervalos programados (ex: a cada 24h) para garantir que a performance de busca não dependa de chamadas constantes à API externa.
+RNF07 – Interface Adaptável (Responsividade): O Indicador de Etapas e as telas de aprovação devem ser totalmente funcionais em dispositivos móveis (Android/iOS - web), permitindo que diretores aprovem cotações com agilidade fora do escritório.
+RNF08 – Tempo de Resposta da Interface: Operações críticas, como a filtragem de produtos ou abertura de uma solicitação, não devem exceder 2 segundos de carregamento para garantir a fluidez do processo.
+RNF09 – Padronização de Linguagem: Toda a interface deve utilizar terminologia de negócio em português (ex: "Indicador de Etapas" em vez de "Stepper", "Fornecedor" em vez de "Player").
+RNF10 – Disponibilidade: O sistema deve manter uma disponibilidade mínima de 99%, operando de forma independente do GLPI (Central de Serviços).
+RNF11 – Escalabilidade de Fluxos: O motor de regras deve ser capaz de processar um número crescente de Centros de Custo e regras de aprovação sem perda de performance, suportando a expansão para novas filiais.
+RNF12 – Motor de Cálculo de Prazos: O algoritmo deve realizar o cálculo de "data futura de vencimento" no momento em que a etapa inicia, cruzando a Janela de Trabalho + Feriados + Regime de Contagem.
+RNF13 – Registro de Timestamp de Auditoria: Gravação imutável de cada mudança de status, registrando o horário exato para permitir auditorias retroativas de performance.
+RNF14 – Persistência de Regras: Solicitações já encerradas não devem ter seus indicadores de SLA alterados caso a configuração de prazos do sistema mude no futuro (preservação do histórico).
+3.1.6 Riscos e Mitigações
+
+Inconsistência no Cadastro "Mão Dupla" de Fornecedores
+Risco: O fornecedor cadastrado no sistema novo pode ser rejeitado pela API do OMIE no momento da criação do pedido por falta de campos fiscais obrigatórios (Ex: Inscrição Estadual, CEP, Bairro).
+Mitigação: Implementar uma trava no final do Mapa de Cotação que obriga o preenchimento de todos os campos críticos do OMIE antes de permitir a seleção do fornecedor como "Vencedor".
+
+Dados Mestres Desatualizados (Cache)
+Risco: Um produto ou Centro de Custo pode ser desativado no OMIE e, devido ao intervalo de sincronização (Cache), continuar disponível para seleção no sistema novo, gerando erro na integração final.
+Mitigação: Implementar a RF13 (Pré-validação), que faz uma consulta rápida em tempo real à API do OMIE apenas para os itens selecionados antes de disparar o pedido.
+
+Gargalos em Fluxos Dinâmicos (Matriz vs. Filial)
+Risco: A complexidade de ter fluxos diferentes pode fazer com que uma solicitação fique "presa" em uma etapa que não possui aprovadores configurados ou que estão ausentes.
+Mitigação: Criação de um relatório de Gargalos (RF11) e alertas automáticos para o Comprador caso uma etapa ultrapasse o SLA definido.
+
+Concorrência em Aprovações "OU" (Colegiado)
+Risco: Dois gestores tentarem aprovar a mesma solicitação simultaneamente, gerando duplicidade de comandos no banco de dados.
+Mitigação: Uso de Database Locks (travas de registro) e atualização instantânea da interface (Websockets ou Polling) para desabilitar o botão assim que o primeiro clique for processado.
+
+Resistência Cultural e Bypass do Sistema
+Risco: Usuários tentarem contornar o novo sistema usando o GLPI (Central) ou e-mail para pedidos urgentes, alegando "complexidade".
+Mitigação: Manter a interface minimalista e garantir que o Indicador de Etapas seja muito claro. Além disso, desativar o formulário de compras antigo na Central assim que o novo sistema entrar em produção.
+
+Gestão de Credenciais (Sem SSO)
+Risco: O aumento de chamados de suporte para "esqueci minha senha", já que o sistema terá um login local independente.
+Mitigação: Implementar uma função de "Esqueci minha senha" automatizada via e-mail e garantir que o nome de usuário seja o mesmo utilizado na Central (E-mail corporativo).
+Risco 07 – Loop Infinito de Ajustes:
+Cenário: O solicitante e o aprovador ficam trocando mensagens de ajuste e informação, estendendo o prazo de compra sem limite.
+Mitigação: Implementar no relatório de Gargalos (RF11) um contador de "Vezes que voltou para ajuste". Se passar de 3 vezes, o sistema alerta o setor de Compras para intervenção manual.
+Risco 08 – Abandono por Erro Desconhecido:
+Cenário: O usuário encontra uma negativa que não entende e desiste de usar o sistema, voltando para o e-mail/GLPI.
+Mitigação: Implementar o RF22, garantindo que 100% das falhas tenham uma tradução para linguagem humana.
+3.1.7 Critérios de Aceite (Frente 2)
+Dinâmica de Etapas (Matriz vs. Filial): Validar que, ao selecionar um CC da Matriz, o sistema exiba apenas as etapas configuradas (ex: só Mapa), e para Filiais, exiba o fluxo completo (Solicitação + Mapa + Pedido).
+Aprovação Colegiada (OU): Confirmar que, em um grupo de 3 aprovadores, assim que o primeiro aprova:
+A pendência some da lista dos outros dois.
+Os outros dois recebem a notificação de "Aprovado por X".
+Aprovação Hierárquica (E): Validar que o aprovador do "Passo 2" só receba a notificação após o "Passo 1" ter dado o OK.
+Mapa de Cotação (Mínimo 3): Bloquear o envio de um mapa com apenas 2 fornecedores, a menos que o campo "Justificativa" seja preenchido.
+Nascimento do Fornecedor (Mão Dupla): Validar que, ao selecionar um "Novo Fornecedor" como vencedor:
+O sistema obrigue o preenchimento dos campos fiscais (IE, Endereço, etc).
+O cadastro seja criado automaticamente no OMIE e o ID retorne para o novo sistema.
+Anexos: Garantir que o sistema impeça o fechamento do mapa sem que haja pelo menos um arquivo anexado para cada fornecedor citado.
+Indicador de Etapas: Validar se a barra visual reflete fielmente o estado do processo e se ajusta dinamicamente ao fluxo do Centro de Custo.
+Trava de Edição (RN08): Garantir que o solicitante não consiga alterar itens ou quantidades após a solicitação ter entrado na trilha de aprovação.
+Sincronização de Cadastro: Validar que produtos desativados no OMIE parem de aparecer na busca do novo sistema após o ciclo de atualização (Cache).
+Logs Imutáveis: Realizar uma ação (aprovação/reprovação) e verificar se o log gerado contém todos os campos da RNF02 e se não há interface para exclusão desses dados.
+
+Seguiu com a segunda FRENTE.
+

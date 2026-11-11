@@ -1,0 +1,238 @@
+* {
+    box-sizing: border-box
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: #2C2461;
+    color: #20252d;
+    font: 14px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding: 24px
+}
+
+.login {
+    width: min(420px, 100%);
+    background: #fff;
+    border: 1px solid #e9ebef;
+    border-radius: 16px;
+    padding: 34px;
+    box-shadow: 0 14px 40px #26334d0c;
+    text-align: center;
+    right: 8rem;
+    position: absolute;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px
+}
+
+.mark {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: #202c4b;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 17px
+}
+
+.brand strong {
+    display: block;
+    font-size: 15px
+}
+
+.brand small {
+    color: #727b88;
+    font-size: 11px
+}
+
+.eyebrow {
+    font-size: 10px;
+    color: #315be8;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase
+}
+
+h1 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #736eb9;
+    margin-bottom: 32px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: bold;
+}
+
+.title {
+    color: white;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 55px;
+    margin-right: 35rem;
+}
+
+.title-login {
+    margin-top: 29.3rem;
+}
+
+.title-reset {
+    margin-top: 20.6rem;
+}
+
+.intro {
+    margin: 0 0 24px;
+    color: #727b88;
+    font-size: 13px
+}
+
+.field {
+    display: grid;
+    gap: 6px;
+    margin: 15px 0
+}
+
+.field label {
+    font-size: 11px;
+    font-weight: 650;
+    color: #8a7a96;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-align: start;
+}
+
+.field input {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid #dfe3e9;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 13px;
+    color: #20252d
+}
+
+.field input:focus {
+    outline: 3px solid #315be822;
+    border-color: #315be8
+}
+
+#backToLogin {
+    position: absolute;
+    margin-top: -78%;
+    margin-left: -41.3%;
+    font-size: x-large;
+    color: #736eb9;
+}
+
+#backToLogin:active, .login-link:active {
+    opacity: .88;
+}
+
+.submit {
+    width: 100%;
+    background: #736eb9;
+    border: none;
+    border-radius: 8px;
+    padding: 14px;
+    color: #fff;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    cursor: pointer;
+    transition: opacity .2s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 600;
+}
+
+.submit:hover {
+    opacity: .88;
+}
+
+button.disabled:disabled {
+    width: 100%;
+    background-color: #bdbdbd;
+    border: none;
+    border-radius: 8px;
+    padding: 14px;
+    color: #757575;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    cursor: not-allowed;
+    opacity: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: opacity .2s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 600;
+    margin-top: 12px;
+}
+
+
+.login-link {
+    display: block;
+    margin-top: 12px;
+    font-size: 12px;
+    text-transform: uppercase;
+    text-align: center;
+    letter-spacing: 1.5px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #736eb9;
+}
+
+.error {
+    background: #fff0ef;
+    border: 1px solid #f1d0cd;
+    color: #a03933;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    margin-bottom: 15px
+}
+
+.success {
+    background: #eaf6f0;
+    border: 1px solid #c9e7d7;
+    color: #176747;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    margin-bottom: 15px
+}
+
+.foot {
+    border-top: 1px solid #e9ebef;
+    margin-top: 22px;
+    padding-top: 16px;
+    color: #858d99;
+    font-size: 10px;
+    text-align: center
+}
+
+.back {
+    display: block;
+    text-align: center;
+    margin-top: 18px;
+    color: #53627d;
+    font-size: 12px;
+    text-decoration: none
+}
+
+.back:hover {
+    color: #315be8
+}
+
+@media(max-width:480px) {
+    .login {
+        padding: 26px 22px
+    }
+}

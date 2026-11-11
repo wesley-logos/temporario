@@ -1,0 +1,10 @@
+# Arquivo local pode conter credenciais de banco e segredo SSO.
+/.env
+/.env.*
+/.env-*
+!/.env.example
+/storage/private/
+
+# Docker
+docker-compose.*
+dockerfile
